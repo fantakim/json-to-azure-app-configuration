@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <title>JSON to Azure App Configuration</title>
+    <style>
+        body {
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <textarea id="inputTextarea" class="form-control" rows="20" placeholder="Enter JSON here"></textarea>
+            </div>
+            <div class="col-md-6">
+                <textarea id="outputTextarea" class="form-control" rows="20" placeholder="Result will be displayed here" readonly></textarea>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-md-12 text-center">
+                <button onclick="convertJson()" class="btn btn-primary">Convert</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SEPARATOR = ':';
+
+        function convertJson() {
+            const inputTextarea = document.getElementById('inputTextarea');
+            const outputTextarea = document.getElementById('outputTextarea');
+
+            const inputJson = inputTextarea.value.trim();
+
+            if (!inputJson) {
+                alert('Please enter valid JSON in the input textarea.');
+                return;
+            }
+
+            try {
+                const jsonDocument = JSON.parse(inputJson);
+                const flattenedJson = flattenJson(jsonDocument);
+                const outputJson = JSON.stringify(flattenedJson, null, 2);
+                outputTextarea.value = outputJson;
+            } catch (error) {
+                alert('Error parsing JSON: ' + error.message);
+            }
+        }
+
+        function flattenJson(jsonElement) {
+            const flattenedJson = [];
+            parseSettings(flattenedJson, [], jsonElement);
+            return flattenedJson.sort((a, b) => a.name.localeCompare(b.name));
+        }
+
+        function parse(flattenedJson, keys, property) {
+            if (property && typeof property === 'object') {
+                parseSettings(flattenedJson, keys, property);
+            } else {
+                const value = Array.isArray(property) ? JSON.stringify(property) : property.toString();
+                const setting = {
+                    name: keys.join(SEPARATOR),
+                    value: value,
+                    slotSetting: false
+                };
+                flattenedJson.push(setting);
+            }
+        }
+
+        function parseSettings(flattenedJson, keys, jsonElement) {
+            for (const [name, value] of Object.entries(jsonElement)) {
+                keys.push(name);
+                parse(flattenedJson, keys, value);
+                keys.pop();
+            }
+        }
+    </script>
+</body>
+</html>
