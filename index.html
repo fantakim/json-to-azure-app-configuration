@@ -1,84 +1,96 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
     <title>JSON to Azure App Configuration</title>
-    <style>
-        body {
-            padding: 20px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="row">
-            <div class="col-md-6">
-                <textarea id="inputTextarea" class="form-control" rows="20" placeholder="Enter JSON here"></textarea>
-            </div>
-            <div class="col-md-6">
-                <textarea id="outputTextarea" class="form-control" rows="20" placeholder="Result will be displayed here" readonly></textarea>
-            </div>
-        </div>
-        <div class="row mt-3">
-            <div class="col-md-12 text-center">
-                <button onclick="convertJson()" class="btn btn-primary">Convert</button>
-            </div>
-        </div>
+  </head>
+  <body class="bg-gray-200 p-8">
+    <div class="mb-8">
+      <h1 class="text-2xl font-bold mb-4">Json to Azure App Configuration</h1>
+      <p class="text-gray-600">
+        Your input information will not be transmitted externally.
+      </p>
+    </div>
+
+    <div class="flex items-center">
+      <textarea
+        id="inputTextarea"
+        class="flex-1 h-96 p-4 border rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent"
+        placeholder="Enter JSON here"
+      ></textarea>
+      <button
+        onclick="convertJson()"
+        class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-full ml-4 h-20"
+      >
+      <span>⮞</span>
+      </button>
+      
+      <textarea
+        id="outputTextarea"
+        class="flex-1 h-96 p-4 border rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent ml-4"
+        placeholder="Result will be displayed here"
+        readonly
+      ></textarea>
     </div>
 
     <script>
-        const SEPARATOR = ':';
+      const SEPARATOR = ":";
 
-        function convertJson() {
-            const inputTextarea = document.getElementById('inputTextarea');
-            const outputTextarea = document.getElementById('outputTextarea');
+      function convertJson() {
+        const inputTextarea = document.getElementById("inputTextarea");
+        const outputTextarea = document.getElementById("outputTextarea");
 
-            const inputJson = inputTextarea.value.trim();
+        const inputJson = inputTextarea.value.trim();
 
-            if (!inputJson) {
-                alert('Please enter valid JSON in the input textarea.');
-                return;
-            }
-
-            try {
-                const jsonDocument = JSON.parse(inputJson);
-                const flattenedJson = flattenJson(jsonDocument);
-                const outputJson = JSON.stringify(flattenedJson, null, 2);
-                outputTextarea.value = outputJson;
-            } catch (error) {
-                alert('Error parsing JSON: ' + error.message);
-            }
+        if (!inputJson) {
+          alert("Please enter valid JSON in the input textarea.");
+          return;
         }
 
-        function flattenJson(jsonElement) {
-            const flattenedJson = [];
-            parseSettings(flattenedJson, [], jsonElement);
-            return flattenedJson.sort((a, b) => a.name.localeCompare(b.name));
+        try {
+          const jsonDocument = JSON.parse(inputJson);
+          const flattenedJson = flattenJson(jsonDocument);
+          const outputJson = JSON.stringify(flattenedJson, null, 2);
+          outputTextarea.value = outputJson;
+        } catch (error) {
+          alert("Error parsing JSON: " + error.message);
         }
+      }
 
-        function parse(flattenedJson, keys, property) {
-            if (property && typeof property === 'object') {
-                parseSettings(flattenedJson, keys, property);
-            } else {
-                const value = Array.isArray(property) ? JSON.stringify(property) : property.toString();
-                const setting = {
-                    name: keys.join(SEPARATOR),
-                    value: value,
-                    slotSetting: false
-                };
-                flattenedJson.push(setting);
-            }
-        }
+      function flattenJson(jsonElement) {
+        const flattenedJson = [];
+        parseSettings(flattenedJson, [], jsonElement);
+        return flattenedJson.sort((a, b) => a.name.localeCompare(b.name));
+      }
 
-        function parseSettings(flattenedJson, keys, jsonElement) {
-            for (const [name, value] of Object.entries(jsonElement)) {
-                keys.push(name);
-                parse(flattenedJson, keys, value);
-                keys.pop();
-            }
+      function parse(flattenedJson, keys, property) {
+        if (property && typeof property === "object") {
+          parseSettings(flattenedJson, keys, property);
+        } else {
+          const value = Array.isArray(property)
+            ? JSON.stringify(property)
+            : property.toString();
+          const setting = {
+            name: keys.join(SEPARATOR),
+            value: value,
+            slotSetting: false,
+          };
+          flattenedJson.push(setting);
         }
+      }
+
+      function parseSettings(flattenedJson, keys, jsonElement) {
+        for (const [name, value] of Object.entries(jsonElement)) {
+          keys.push(name);
+          parse(flattenedJson, keys, value);
+          keys.pop();
+        }
+      }
     </script>
-</body>
+  </body>
 </html>
